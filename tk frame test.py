@@ -4,7 +4,7 @@
 
 from tkinter import *
 from tkinter import ttk
-from pillow import ImageTK, Image
+#from pillow import ImageTK, Image
 import datetime
 import sqlite3
 from sqlite3 import Error
@@ -452,11 +452,11 @@ def RootWindow(previousframe):
         l.destroy()
 
     frame = Frame(root)
-    img = ImageTk.PhotoImage(Image.open("True1.gif"))
+    #img = ImageTk.PhotoImage(Image.open("True1.gif"))
 
     frame.pack()
 
-    menuframe = Frame(root, image = img)
+    menuframe = Frame(root) #, image = img)
     menuframe.pack(side = BOTTOM)
 
     #when one of these buttons is pressed, the cuntion in the command parameter is called
@@ -473,18 +473,19 @@ def destroyTuple(previousframe):
         print(type(frames))
         list = frames.pack_slaves()
         for l in list:    
-	    l.destroy()
+            l.destroy()
 	
 #function to instantiate customer menu
 def OpenCustomerMenu(previousframe):
     #the booking frames withing frame, so this loop deals with that circumstance
     print(type(previousframe))
-    if type(previousframe) == tuple:
-        destroyTuple(previousframe)
-    else:
+    if type(previousframe) == Tk:
         list = previousframe.pack_slaves()
         for l in list:
             l.destroy()
+    else:
+        previousframe = destroyTuple(previousframe)
+
         
     customermenu = Frame(previousframe)
     customermenu.pack()
