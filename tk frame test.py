@@ -1,4 +1,5 @@
 
+
 #imported modules
 
 from tkinter import *
@@ -6,9 +7,6 @@ from tkinter import ttk
 import datetime
 import sqlite3
 from sqlite3 import Error
-
-print(datetime.date.today())
-
 
 
 #SQL FUNTIONS
@@ -123,7 +121,7 @@ def AddData(conn, FN, SN, LC, DT, HC, MT):
 
     #Executes if create has a value - if the function was successful
     if create is not None:
-        print(f"Booking ID = {create}")
+        print("Booking ID = {create}")
         
     else:
         print("Unsuccessful")
@@ -417,17 +415,18 @@ def InitialiseTables(conn, db_file):
     sql_create_bookings_table = ''' CREATE TABLE IF NOT EXISTS bookings_table (
                                                 firstname text NOT NULL,
                                                 secondname text NOT NULL,
-                                                eventdate text NOT NULL,
-                                                location text NOT NULL,
-                                                headcount int NOT NULL,
-                                                menutype text NOT NULL
+                                                eventdate text,
+                                                location text,
+                                                headcount int,
+                                                menutype text,
+                                                choiceofmenu text,
+                                                indoororoutdoor text,
+                                                utilityaccess text,
+                                                deliverytocustomers text,
+                                                presentationoffood text
                                             ); '''
 
-##                                                dietaryrequirements text NOT NULL,
-##                                                indoororoutdoor text NOT NULL,
-##                                                utilityaccess text NOT NULL,
-##                                                deliverytocustomers text NOT NULL,
-##                                                presentationoffood text NOT NULL
+
 ##    #create a database connection
 ##    conn = CreateConnection(db_file)
 ##    
@@ -460,6 +459,7 @@ def RootWindow(previousframe):
 
     #when one of these buttons is pressed, the cuntion in the command parameter is called
     customerbutton = Button(frame, text='Open Customer Menu', command = lambda:OpenCustomerMenu(root))
+    customerbutton.configure(bg="black")
     customerbutton.pack()
 
     staffbutton = Button(frame, text='Open Staff Menu', command = lambda:OpenStaffMenu(root))
@@ -481,7 +481,6 @@ def OpenCustomerMenu(previousframe):
 
     bookingform = Button(customermenu, text='Make a Booking', command = lambda:OpenBookingForm(customermenu))
     bookingform.pack()
-
 
 
 #function to instantiate booking form frame
@@ -507,6 +506,7 @@ def OpenBookingForm(previousframe):
     secondnamefield = Entry(bookingframe)
     secondnamefield.grid(row = 2, column = 3)
 
+
     locationlabel = Label(bookingframe, text = 'Please enter the location of your booking:')
     locationlabel.grid(row = 3, column = 1)
 
@@ -520,6 +520,7 @@ def OpenBookingForm(previousframe):
 
     daylabel = Label(dayframe, text = 'day:')
     daylabel.pack( side = LEFT)
+
 
     daycombo = ttk.Combobox(dayframe, values = [
         '00', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12', '13', '14', '15', '16',
@@ -622,16 +623,50 @@ def OpenStaffMenu(previousframe):
     staffmenu.pack()
     title = Label(staffmenu, text='Welcome to the staff menu! Please choose a service.').pack()
 
+    calendar = Button(staffmenu, text='View Calendar', command = lambda:OpenCalendarFrame(staffmenu))
+    calendar.pack()
+
     returnbutton = Button(staffmenu, text='Return to main menu', command = lambda:RootWindow(staffmenu))
     returnbutton.pack()
 
 
 
-def OpenCalendarFrame():
+def OpenCalendarFrame(previousframe):
     #makes a list of everything on the previousframe and destroys them one by one!
     list = previousframe.pack_slaves()
     for l in list:
         l.destroy()	
+
+    calendarframe = Frame(previousframe)
+    calendarframe.pack()
+
+    title = Label(calendarframe, text='Welcome to the calendar! See what is coming up!').pack()
+
+
+    db = "test.db"
+
+    conn = CreateConnection(db)
+    if conn == None:
+        print('Connection failed')
+
+    InitialiseTables(conn, db)
+    #SQL command to insert data
+    sql = '''SELECT * FROM bookings_table;'''
+    #Creates cursor
+    c = conn.cursor()
+    #Executes SQL command using user input
+    results = c.execute(sql).fetchall()
+
+    if len(results) != 0:
+        tree = ttk.Treeview()
+        i=0 
+        for row in results:
+            print(row)
+            tree.insert('', 'end', i, text=row)
+            i+=1
+                
+    else:
+        print("No results found")
 
 
 
