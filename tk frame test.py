@@ -467,13 +467,25 @@ def RootWindow(previousframe):
     staffbutton = Button(frame, text='Open Staff Menu', command = lambda:OpenStaffMenu(root))
     staffbutton.pack()
 
+def destroyTuple(previousframe):	
+    for frames in previousframe:       
+        #makes a list of everything on the previousframe and destroys them one by one!
+        print(type(frames))
+        list = frames.pack_slaves()
+        for l in list:    
+	    l.destroy()
+	
 #function to instantiate customer menu
 def OpenCustomerMenu(previousframe):
-    #makes a list of everything on the previousframe and destroys them one by one!
-    list = previousframe.pack_slaves()
-    for l in list:
-        l.destroy()
-
+    #the booking frames withing frame, so this loop deals with that circumstance
+    print(type(previousframe))
+    if type(previousframe) == tuple:
+        destroyTuple(previousframe)
+    else:
+        list = previousframe.pack_slaves()
+        for l in list:
+            l.destroy()
+        
     customermenu = Frame(previousframe)
     customermenu.pack()
     title = Label(customermenu, text='Welcome to the customer menu! Please choose a service.').pack()
@@ -565,15 +577,17 @@ def OpenBookingForm(previousframe):
         ], width = 15)
     menutypecombo.grid(row = 6, column = 3)
 
-    
-    
 
     getbutton = Button(bookingframe, text='Make booking',
                        command = lambda:ConfirmBookingToDatabase(firstnamefield, secondnamefield, locationfield,
                                                                  daycombo, monthcombo, yearcombo, headcountfield
                                                                  , menutypecombo))
     getbutton.grid(row = 10, column = 2)
-    
+
+    removalframes = (bookingframe, dayframe, monthframe, yearframe)
+
+    returnbutton = Button(bookingframe, text='Return to customer menu', command = lambda:OpenCustomerMenu(removalframes))
+    returnbutton.grid(row = 10, column = 1)
 
     
 
@@ -585,8 +599,6 @@ def ConfirmBookingToDatabase(firstnamefield, secondnamefield, locationfield, day
     LC = locationfield.get()
     HC = headcountfield.get()
     MT = menutypecombo.get()
-    print(HC + '   ' + MT + FN)
-    
 
     #getting and compiling date from combo boxes
     DAY = daycombo.get()
@@ -594,7 +606,6 @@ def ConfirmBookingToDatabase(firstnamefield, secondnamefield, locationfield, day
     YEAR = yearcombo.get()
 
     DT = str(DAY + '-' + MON + '-' + YEAR)
-    print(DT)
 
     #Name of database file
     #'r' shows that it is passing plain text incase '\' are used in file address
