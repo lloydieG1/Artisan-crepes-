@@ -7,7 +7,6 @@ import datetime
 import sqlite3
 from sqlite3 import Error
 
-
 #SQL FUNTIONS
 
 def CreateConnection(db_file):
@@ -414,15 +413,15 @@ def InitialiseTables(conn, db_file):
     sql_create_bookings_table = ''' CREATE TABLE IF NOT EXISTS bookings_table (
                                                 firstname text NOT NULL,
                                                 secondname text NOT NULL,
-                                                eventdate text NOT NULL,
-                                                location text NOT NULL,
-                                                headcount int NOT NULL,
-                                                dietaryrequirements text NOT NULL,
-                                                choiceofmenu text NOT NULL,
-                                                indoororoutdoor text NOT NULL,
-                                                utilityaccess text NOT NULL,
-                                                deliverytocustomers text NOT NULL,
-                                                presentationoffood text NOT NULL
+                                                eventdate text,
+                                                location text,
+                                                headcount int,
+                                                dietaryrequirements text,
+                                                choiceofmenu text,
+                                                indoororoutdoor text,
+                                                utilityaccess text,
+                                                deliverytocustomers text,
+                                                presentationoffood text
                                             ); '''
     
 ##    #create a database connection
@@ -585,7 +584,7 @@ def OpenCalendarFrame(previousframe):
     title = Label(calendarframe, text='Welcome to the calendar! See what is coming up!').pack()
 
 
-    db = r"test.db"
+    db = "test.db"
 
     conn = CreateConnection(db)
     if conn == None:
