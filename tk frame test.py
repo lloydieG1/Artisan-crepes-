@@ -4,10 +4,10 @@
 
 from tkinter import *
 from tkinter import ttk
+from pillow import ImageTK, Image
 import datetime
 import sqlite3
 from sqlite3 import Error
-
 
 #SQL FUNTIONS
 
@@ -452,9 +452,11 @@ def RootWindow(previousframe):
         l.destroy()
 
     frame = Frame(root)
+    img = ImageTk.PhotoImage(Image.open("True1.gif"))
+
     frame.pack()
 
-    menuframe = Frame(root)
+    menuframe = Frame(root, image = img)
     menuframe.pack(side = BOTTOM)
 
     #when one of these buttons is pressed, the cuntion in the command parameter is called
@@ -596,7 +598,7 @@ def ConfirmBookingToDatabase(firstnamefield, secondnamefield, locationfield, day
 
     #Name of database file
     #'r' shows that it is passing plain text incase '\' are used in file address
-    db = r"test5.db"
+    db = r"test.db"
 
     #create a database connection
     conn = CreateConnection(db)
@@ -664,7 +666,7 @@ def OpenCalendarFrame(previousframe):
             print(row)
             tree.insert('', 'end', i, text=row)
             i+=1
-                
+        tree.pack()        
     else:
         print("No results found")
 
