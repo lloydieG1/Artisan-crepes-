@@ -467,11 +467,20 @@ def RootWindow(previousframe):
 
 #function to instantiate customer menu
 def OpenCustomerMenu(previousframe):
-    #makes a list of everything on the previousframe and destroys them one by one!
-    list = previousframe.pack_slaves()
-    for l in list:
-        l.destroy()
-
+    #the booking frames withing frame, so this loop deals with that circumstance
+    print(type(previousframe))
+    try:
+        for frames in previousframe:       
+            #makes a list of everything on the previousframe and destroys them one by one!
+            print(type(frames))
+            list = frames.pack_slaves()
+            for l in list:
+                l.destroy()
+    except:
+        list = previousframe.pack_slaves()
+        for l in list:
+            l.destroy()
+        
     customermenu = Frame(previousframe)
     customermenu.pack()
     title = Label(customermenu, text='Welcome to the customer menu! Please choose a service.').pack()
@@ -570,7 +579,9 @@ def OpenBookingForm(previousframe):
                                                                  , menutypecombo))
     getbutton.grid(row = 10, column = 2)
 
-    returnbutton = Button(bookingframe, text='Return to customer menu', command = lambda:OpenCustomerMenu(OpenBookingForm))
+    removalframes = (bookingframe, dayframe, monthframe, yearframe)
+
+    returnbutton = Button(bookingframe, text='Return to customer menu', command = lambda:OpenCustomerMenu(removalframes))
     returnbutton.grid(row = 10, column = 1)
 
     
