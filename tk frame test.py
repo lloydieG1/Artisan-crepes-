@@ -563,15 +563,15 @@ def OpenBookingForm(previousframe):
         ], width = 15)
     menutypecombo.grid(row = 6, column = 3)
 
-    
-    
 
     getbutton = Button(bookingframe, text='Make booking',
                        command = lambda:ConfirmBookingToDatabase(firstnamefield, secondnamefield, locationfield,
                                                                  daycombo, monthcombo, yearcombo, headcountfield
                                                                  , menutypecombo))
     getbutton.grid(row = 10, column = 2)
-    
+
+    returnbutton = Button(bookingframe, text='Return to customer menu', command = lambda:OpenCustomerMenu(OpenBookingForm))
+    returnbutton.grid(row = 10, column = 1)
 
     
 
@@ -583,8 +583,6 @@ def ConfirmBookingToDatabase(firstnamefield, secondnamefield, locationfield, day
     LC = locationfield.get()
     HC = headcountfield.get()
     MT = menutypecombo.get()
-    print(HC + '   ' + MT + FN)
-    
 
     #getting and compiling date from combo boxes
     DAY = daycombo.get()
@@ -592,11 +590,10 @@ def ConfirmBookingToDatabase(firstnamefield, secondnamefield, locationfield, day
     YEAR = yearcombo.get()
 
     DT = str(DAY + '-' + MON + '-' + YEAR)
-    print(DT)
 
     #Name of database file
     #'r' shows that it is passing plain text incase '\' are used in file address
-    db = r"test5.db"
+    db = r"test.db"
 
     #create a database connection
     conn = CreateConnection(db)
