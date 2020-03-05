@@ -1,9 +1,14 @@
 
 #imported modules
+
 from tkinter import *
+from tkinter import ttk
 import datetime
 import sqlite3
 from sqlite3 import Error
+
+print(datetime.date.today())
+
 
 
 #SQL FUNTIONS
@@ -104,7 +109,7 @@ def Menu(conn):
 ##        menu()
 
 
-def AddData(conn, FN, SN, LC):
+def AddData(conn, FN, SN, LC, DT, HC, MT):
     ''' allows user to select the table to add to and asks for input for new record
     :param conn: Connection object
     :return:
@@ -112,7 +117,7 @@ def AddData(conn, FN, SN, LC):
 
 
     #Creates a list of all user input
-    bookingdata = (FN, SN, LC)
+    bookingdata = (FN, SN, LC, DT, HC, MT)
     #Navigates to create_membership_type function
     create = ConfirmBookingToTable(conn, bookingdata)
 
@@ -138,7 +143,7 @@ def ConfirmBookingToTable(conn, bookingdata):
     :return: booking id
     '''
     #SQL command to insert data
-    sql = '''INSERT INTO bookings_table(firstname, secondname, location)VALUES(?,?,?) '''
+    sql = '''INSERT INTO bookings_table(firstname, secondname, location, eventdate, headcount, menutype)VALUES(?,?,?,?,?,?) '''
     #Creates cursor
     c = conn.cursor()
     #Executes SQL command using user input
@@ -415,14 +420,14 @@ def InitialiseTables(conn, db_file):
                                                 eventdate text NOT NULL,
                                                 location text NOT NULL,
                                                 headcount int NOT NULL,
-                                                dietaryrequirements text NOT NULL,
-                                                choiceofmenu text NOT NULL,
-                                                indoororoutdoor text NOT NULL,
-                                                utilityaccess text NOT NULLL,
-                                                deliverytocustomers text NOT NULL,
-                                                presentationoffood text NOT NULL
+                                                menutype text NOT NULL
                                             ); '''
-    
+
+##                                                dietaryrequirements text NOT NULL,
+##                                                indoororoutdoor text NOT NULL,
+##                                                utilityaccess text NOT NULL,
+##                                                deliverytocustomers text NOT NULL,
+##                                                presentationoffood text NOT NULL
 ##    #create a database connection
 ##    conn = CreateConnection(db_file)
 ##    
@@ -477,11 +482,11 @@ def OpenCustomerMenu(previousframe):
     bookingform = Button(customermenu, text='Make a Booking', command = lambda:OpenBookingForm(customermenu))
     bookingform.pack()
 
-def 
+
 
 #function to instantiate booking form frame
 def OpenBookingForm(previousframe):
-    #makes a list of everything on the previousframe and destroyfile:///media/lloyd/USB DISK/Computer Science ( recent bacjup)s them one by one!
+    #makes a list of everything on the previousframe and destroys them one by one!
     list = previousframe.pack_slaves()
     for l in list:
         l.destroy()
@@ -494,49 +499,103 @@ def OpenBookingForm(previousframe):
     firstnamelabel.grid(row = 1, column = 1)
     
     firstnamefield = Entry(bookingframe)
-    firstnamefield.grid(row = 1, column = 2)
+    firstnamefield.grid(row = 1, column = 3)
 
     secondnamelabel = Label(bookingframe, text = 'Please enter your second name:')
     secondnamelabel.grid(row = 2, column = 1)
 
     secondnamefield = Entry(bookingframe)
-    secondnamefield.grid(row = 2, column = 2)
-
-    #f1, f2 and f3 are seperate frames for the month day and year, these each are packed toghether with grid in bookingframe
-    dayframe = tk.Frame(bookingframe)
-    monthframe = tk.Frame(bookingframe)
-    yearframe = tk.Frame(bookingframe)
-
-    daylabel = Label(f1, text = 'day:')
-    daylabel.pack()
-
-    monthlabel = Label(f1, text = 'Month:')
-    monthlabel.pack()
-
-    yearlabel = Label(f1, text = 'Month:')
-    yearlabel.pack()
+    secondnamefield.grid(row = 2, column = 3)
 
     locationlabel = Label(bookingframe, text = 'Please enter the location of your booking:')
     locationlabel.grid(row = 3, column = 1)
 
     locationfield = Entry(bookingframe)
-    locationfield.grid(row = 3, column = 2) 
+    locationfield.grid(row = 3, column = 3) 
 
-    getbutton = Button(bookingframe, text='Make booking', command = lambda:ConfirmBookingToDatabase(firstnamefield, secondnamefield, locationfield))
-    getbutton.grid(row = 5, column = 1)
+    #dayframe,monthframe,yearframe are seperate frames for the month day and year, these each are packed toghether with grid in bookingframe
+    dayframe = Frame(bookingframe)
+    monthframe = Frame(bookingframe)
+    yearframe = Frame(bookingframe)
+
+    daylabel = Label(dayframe, text = 'day:')
+    daylabel.pack( side = LEFT)
+
+    daycombo = ttk.Combobox(dayframe, values = [
+        '00', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12', '13', '14', '15', '16',
+        '17', '18', '19', '20', '21', '22', '23', '24', '25', '26', '27', '28', '29', '30', '31'
+        ], width = 20)
+    daycombo.pack()
+
+    monthlabel = Label(monthframe, text = 'Month:')
+    monthlabel.pack( side = LEFT)
+
+    monthcombo = ttk.Combobox(monthframe, values = [
+        '01','02','03','04','05','06','07','08','09','10','11','12'
+        ], width = 20)
+    monthcombo.pack()
+
+    yearlabel = Label(yearframe, text = 'year:')
+    yearlabel.pack( side = LEFT)
+
+    yearcombo = ttk.Combobox(yearframe, values = [
+        '2020','2021','2023','2024','2025'
+        ], width = 20)
+    yearcombo.pack()
+
+    #places the 3 frames for month date and year in the grid
+    dayframe.grid(row = 4, column = 1)
+    monthframe.grid(row = 4, column = 2)   
+    yearframe.grid(row = 4, column = 3)
+
+    headcountlabel = Label(bookingframe, text = 'Please enter the headcount for your event:')
+    headcountlabel.grid(row = 5, column = 1)
+    
+    headcountfield = Entry(bookingframe)
+    headcountfield.grid(row = 5, column = 3)
+
+    menutypelabel = Label(bookingframe, text = 'Please choose a menu:')
+    menutypelabel.grid(row = 6, column = 1)
+
+    menutypecombo = ttk.Combobox(bookingframe, values = [
+        'Sweet Basic','Sweet and Savoury Basic', 'Sweet luxury', 'Sweet and Savoury Luxury'
+        ], width = 15)
+    menutypecombo.grid(row = 6, column = 3)
+
+    
+    
+
+    getbutton = Button(bookingframe, text='Make booking',
+                       command = lambda:ConfirmBookingToDatabase(firstnamefield, secondnamefield, locationfield,
+                                                                 daycombo, monthcombo, yearcombo, headcountfield
+                                                                 , menutypecombo))
+    getbutton.grid(row = 10, column = 2)
     
 
     
 
-    #this function is called by a button at the end of a  form
-def ConfirmBookingToDatabase(firstnamefield,secondnamefield,locationfield):
+#this function is called by a button at the end of a  form
+def ConfirmBookingToDatabase(firstnamefield, secondnamefield, locationfield, daycombo, monthcombo, yearcombo,
+                             headcountfield, menutypecombo):
     FN = firstnamefield.get()
     SN = secondnamefield.get()
     LC = locationfield.get()
+    HC = headcountfield.get()
+    MT = menutypecombo.get()
+    print(HC + '   ' + MT + FN)
+    
 
-##    #Name of database file
-##    #'r' shows that it is passing plain text incase '\' are used in file address
-    db = r"test.db"
+    #getting and compiling date from combo boxes
+    DAY = daycombo.get()
+    MON = monthcombo.get()
+    YEAR = yearcombo.get()
+
+    DT = str(DAY + '-' + MON + '-' + YEAR)
+    print(DT)
+
+    #Name of database file
+    #'r' shows that it is passing plain text incase '\' are used in file address
+    db = r"test5.db"
 
     #create a database connection
     conn = CreateConnection(db)
@@ -545,7 +604,7 @@ def ConfirmBookingToDatabase(firstnamefield,secondnamefield,locationfield):
 
     InitialiseTables(conn, db)
     
-    AddData(conn, FN, SN, LC)
+    AddData(conn, FN, SN, LC, DT, HC, MT)
 	
 
 
@@ -577,7 +636,6 @@ def OpenCalendarFrame():
 
 
 
-		
 
 #Main program
     
@@ -586,3 +644,5 @@ root.minsize(width = '300', height = '400')
 
 RootWindow(root)
 root.mainloop()
+
+
