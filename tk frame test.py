@@ -470,10 +470,12 @@ def RootWindow(previousframe):
 def destroyTuple(previousframe):	
     for frames in previousframe:       
         #makes a list of everything on the previousframe and destroys them one by one!
-        print(type(frames))
+        print("Destorying framse")
         list = frames.pack_slaves()
         for l in list:    
             l.destroy()
+    for l in previousframe:
+        l.destroy()
 	
 #function to instantiate customer menu
 def OpenCustomerMenu(previousframe):
