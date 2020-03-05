@@ -465,18 +465,21 @@ def RootWindow(previousframe):
     staffbutton = Button(frame, text='Open Staff Menu', command = lambda:OpenStaffMenu(root))
     staffbutton.pack()
 
+def destroyTuple(previousframe):	
+    for frames in previousframe:       
+        #makes a list of everything on the previousframe and destroys them one by one!
+        print(type(frames))
+        list = frames.pack_slaves()
+        for l in list:    
+	    l.destroy()
+	
 #function to instantiate customer menu
 def OpenCustomerMenu(previousframe):
     #the booking frames withing frame, so this loop deals with that circumstance
     print(type(previousframe))
-    try:
-        for frames in previousframe:       
-            #makes a list of everything on the previousframe and destroys them one by one!
-            print(type(frames))
-            list = frames.pack_slaves()
-            for l in list:
-                l.destroy()
-    except:
+    if type(previousframe) == tuple:
+        destroyTuple(previousframe)
+    else:
         list = previousframe.pack_slaves()
         for l in list:
             l.destroy()
