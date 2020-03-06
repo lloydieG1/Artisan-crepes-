@@ -4,8 +4,9 @@
 
 from tkinter import *
 from tkinter import ttk
-#from pillow import ImageTK, Image
+from PIL import ImageTk, Image
 import datetime
+from datetime import datetime as dt
 import sqlite3
 from sqlite3 import Error
 
@@ -452,6 +453,10 @@ def RootWindow(previousframe):
         l.destroy()
 
     frame = Frame(root)
+    canvas = Canvas(root, width = 20, height = 20)  
+    canvas.pack()  
+    img = ImageTk.PhotoImage(Image.open("logo.png"))  
+    canvas.create_image(20, 20, anchor=NW, image=img)
     #img = ImageTk.PhotoImage(Image.open("True1.gif"))
 
     frame.pack()
@@ -468,22 +473,25 @@ def RootWindow(previousframe):
     staffbutton.pack()
 
 def destroyTuple(previousframe):	
-    for frames in previousframe:       
-        #makes a list of everything on the previousframe and destroys them one by one!
-        print("Destorying framse")
-        list = frames.pack_slaves()
-        for l in list:    
-            l.destroy()
+    # for frames in previousframe:       
+    #     #makes a list of everything on the previousframe and destroys them one by one!
+    #     print("Destorying framse")
+    #     # list = frames.pack_slaves()
+        # for l in list:    
+        #     l.destroy()
     for l in previousframe:
         l.destroy()
+    # lst = previousframe.pack_slaves()
+    # for l in previousframe:
+    #     l.destroy()
 	
 #function to instantiate customer menu
 def OpenCustomerMenu(previousframe):
     #the booking frames withing frame, so this loop deals with that circumstance
     print(type(previousframe))
     if type(previousframe) == Tk:
-        list = previousframe.pack_slaves()
-        for l in list:
+        lst = previousframe.pack_slaves()    #list is a keyword
+        for l in lst:
             l.destroy()
     else:
         previousframe = destroyTuple(previousframe)
@@ -493,12 +501,11 @@ def OpenCustomerMenu(previousframe):
     customermenu.pack()
     title = Label(customermenu, text='Welcome to the customer menu! Please choose a service.').pack()
 
-    returnbutton = Button(customermenu, text='Return to main menu', command = lambda:RootWindow(customermenu))
-    returnbutton.pack()
-
     bookingform = Button(customermenu, text='Make a Booking', command = lambda:OpenBookingForm(customermenu))
     bookingform.pack()
 
+    returnbutton = Button(customermenu, text='Return to main menu', command = lambda:RootWindow(customermenu))
+    returnbutton.pack()
 
 #function to instantiate booking form frame
 def OpenBookingForm(previousframe):
@@ -665,13 +672,16 @@ def OpenCalendarFrame(previousframe):
     if conn == None:
         print('Connection failed')
 
-    InitialiseTables(conn, db)
-    #SQL command to insert data
+    #SQL command to select data
     sql = '''SELECT * FROM bookings_table;'''
     #Creates cursor
     c = conn.cursor()
     #Executes SQL command using user input
     results = c.execute(sql).fetchall()
+
+    #Sort results in chronological order
+    date = lambda r: dt.strptime(r[2], '%d-%m-%Y')
+    results.sort(key=date)
 
     if len(results) != 0:
         tree = ttk.Treeview()
