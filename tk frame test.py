@@ -453,10 +453,11 @@ def RootWindow(previousframe):
         l.destroy()
 
     frame = Frame(root)
-    canvas = Canvas(root, width = 20, height = 20)  
+    canvas = Canvas(previousframe)  
+    
+    img = ImageTk.PhotoImage(Image.open("logo1.jpg"))  
+    canvas.create_image(200, 200, anchor=N, image=img)
     canvas.pack()  
-    img = ImageTk.PhotoImage(Image.open("logo.png"))  
-    canvas.create_image(20, 20, anchor=NW, image=img)
     #img = ImageTk.PhotoImage(Image.open("True1.gif"))
 
     frame.pack()
@@ -465,11 +466,11 @@ def RootWindow(previousframe):
     menuframe.pack(side = BOTTOM)
 
     #when one of these buttons is pressed, the cuntion in the command parameter is called
-    customerbutton = Button(frame, text='Open Customer Menu', command = lambda:OpenCustomerMenu(root))
-    customerbutton.configure(bg="black")
+    customerbutton = Button(frame, text='Open Customer Menu', highlightbackground= 'blue', command = lambda:OpenCustomerMenu(root))
+    customerbutton.configure()
     customerbutton.pack()
 
-    staffbutton = Button(frame, text='Open Staff Menu', command = lambda:OpenStaffMenu(root))
+    staffbutton = Button(frame, text='Open Staff Menu', highlightbackground= 'blue', command = lambda:OpenStaffMenu(root))
     staffbutton.pack()
 
 def destroyTuple(previousframe):	
@@ -501,10 +502,13 @@ def OpenCustomerMenu(previousframe):
     customermenu.pack()
     title = Label(customermenu, text='Welcome to the customer menu! Please choose a service.').pack()
 
-    bookingform = Button(customermenu, text='Make a Booking', command = lambda:OpenBookingForm(customermenu))
+    bookingform = Button(customermenu, text='Make a Booking', highlightbackground= 'blue', command = lambda:OpenBookingForm(customermenu))
     bookingform.pack()
 
-    returnbutton = Button(customermenu, text='Return to main menu', command = lambda:RootWindow(customermenu))
+    viewquote = Button(customermenu, text='View Quotes', highlightbackground= 'blue', command = lambda:OpenQuote(customermenu))
+    viewquote.pack()
+
+    returnbutton = Button(customermenu, text='Return to main menu', highlightbackground= 'blue', command = lambda:RootWindow(customermenu))
     returnbutton.pack()
 
 #function to instantiate booking form frame
@@ -588,7 +592,7 @@ def OpenBookingForm(previousframe):
     menutypecombo.grid(row = 6, column = 3)
 
 
-    getbutton = Button(bookingframe, text='Make booking',
+    getbutton = Button(bookingframe, text='Make booking', highlightbackground= 'blue',
                        command = lambda:ConfirmBookingToDatabase(firstnamefield, secondnamefield, locationfield,
                                                                  daycombo, monthcombo, yearcombo, headcountfield
                                                                  , menutypecombo))
@@ -596,14 +600,26 @@ def OpenBookingForm(previousframe):
 
     removalframes = (bookingframe, dayframe, monthframe, yearframe)
 
-    returnbutton = Button(bookingframe, text='Return to customer menu', command = lambda:OpenCustomerMenu(removalframes))
+    returnbutton = Button(bookingframe, text='Return to customer menu', highlightbackground= 'blue', command = lambda:OpenCustomerMenu(removalframes))
     returnbutton.grid(row = 10, column = 1)
 
-    
+
+def OpenQuote(previousframe):
+    #makes a list of everything on the previousframe and destroys them one by one!
+    list = previousframe.pack_slaves()
+    for l in list:
+        l.destroy()
+
 
 #this function is called by a button at the end of a  form
 def ConfirmBookingToDatabase(firstnamefield, secondnamefield, locationfield, daycombo, monthcombo, yearcombo,
                              headcountfield, menutypecombo):
+
+    confirmBookingFrame = Frame(root)
+    confirmBookingFrame.pack()
+
+    title = Label(confirmBookingFrame, text='Thankyou for your request. Your booking is being processed...').pack()
+
     FN = firstnamefield.get()
     SN = secondnamefield.get()
     LC = locationfield.get()
@@ -646,10 +662,13 @@ def OpenStaffMenu(previousframe):
     staffmenu.pack()
     title = Label(staffmenu, text='Welcome to the staff menu! Please choose a service.').pack()
 
-    calendar = Button(staffmenu, text='View Calendar', command = lambda:OpenCalendarFrame(staffmenu))
+    calendar = Button(staffmenu, text='View Calendar', highlightbackground= 'blue', command = lambda:OpenCalendarFrame(staffmenu))
     calendar.pack()
 
-    returnbutton = Button(staffmenu, text='Return to main menu', command = lambda:RootWindow(staffmenu))
+    reviewbooking = Button(staffmenu, text='Review Bookings', highlightbackground= 'blue', command = lambda:ReviewBooking(staffmenu))
+    reviewbooking.pack()
+
+    returnbutton = Button(staffmenu, text='Return to main menu', highlightbackground= 'blue', command = lambda:RootWindow(staffmenu))
     returnbutton.pack()
 
 
@@ -705,6 +724,14 @@ def OpenCalendarFrame(previousframe):
         print("No results found")
 
 
+# Need a way to delete bookings with a key binding
+    # tree.bind("<Backspace>", command=)
+
+def ReviewBooking(previousframe):
+    #makes a list of everything on the previousframe and destroys them one by one!
+    list = previousframe.pack_slaves()
+    for l in list:
+        l.destroy()
 
 
 
