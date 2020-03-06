@@ -673,22 +673,32 @@ def OpenCalendarFrame(previousframe):
         print('Connection failed')
 
     #SQL command to select data
-    sql = '''SELECT * FROM bookings_table;'''
+    sql = '''SELECT eventdate, secondname, location menutype from bookings_table;'''
     #Creates cursor
     c = conn.cursor()
     #Executes SQL command using user input
     results = c.execute(sql).fetchall()
 
     #Sort results in chronological order
-    date = lambda r: dt.strptime(r[2], '%d-%m-%Y')
+    date = lambda r: dt.strptime(r[0], '%d-%m-%Y')
     results.sort(key=date)
+    
+    tree = ttk.Treeview()
+    tree["columns"]=("one","two","three")
+    tree.column("#0", width=270, minwidth=270)
+    tree.column("one", width=150, minwidth=150)
+    tree.column("two", width=200, minwidth=100)
+    tree.column("three", width=100, minwidth=100)
+    tree.heading("#0",text="Date")
+    tree.heading("one", text="Surname")
+    tree.heading("two", text="Location")
+    tree.heading("three", text="Menutype")
 
-    if len(results) != 0:
-        tree = ttk.Treeview()
+    if len(results) != 0:    
         i=0 
         for row in results:
             print(row)
-            tree.insert('', 'end', i, text=row)
+            tree.insert('', 'end', i,text=row[0], values=row[1:])
             i+=1
         tree.pack()        
     else:
