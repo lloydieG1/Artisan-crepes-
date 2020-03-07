@@ -40,7 +40,7 @@ def CreateTable(conn, create_table_sql):
         print("Error2 = " + str(e))
 
 
-def AddData(conn, FN, SN, LC, DT, HC, MT):
+def AddData(conn, FN, SN, LC, DT, HC, MT, userid, username):
     ''' allows user to select the table to add to and asks for input for new record
     :param conn: Connection object
     :return:
@@ -48,7 +48,7 @@ def AddData(conn, FN, SN, LC, DT, HC, MT):
 
 
     #Creates a lst of all user input
-    bookingdata = (FN, SN, LC, DT, HC, MT)
+    bookingdata = (FN, SN, LC, DT, HC, MT, userid, username, 0, 0)
     #Navigates to create_membership_type function
     create = ConfirmBookingToTable(conn, bookingdata)
 
@@ -71,7 +71,7 @@ def ConfirmBookingToTable(conn, bookingdata):
     :return: booking id
     '''
     #SQL command to insert data
-    sql = '''INSERT INTO bookings_table(firstname, secondname, location, eventdate, headcount, menutype)VALUES(?,?,?,?,?,?) '''
+    sql = '''INSERT INTO bookings_table(firstname, secondname, location, eventdate, headcount, menutype, userid, username, quote, quote_accepted)VALUES(?, ?,?,?,?,?,?,?,?,?) '''
     #Creates cursor
     c = conn.cursor()
     #Executes SQL command using user input

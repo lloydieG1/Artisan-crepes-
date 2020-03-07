@@ -4,6 +4,7 @@
 
 from tkinter import *
 from tkinter import ttk
+import tkinter.simpledialog
 import datetime
 from datetime import datetime as dt
 # import sqlite3
@@ -143,11 +144,14 @@ def OpenBookingForm(previousframe):
         ], width = 15)
     menutypecombo.grid(row = 6, column = 3)
 
+    userid = 1
+    username = "admin"
+
 
     getbutton = Button(bookingframe, text='Make booking', highlightbackground= 'blue',
-                       command = lambda:ConfirmBookingToDatabase(firstnamefield, secondnamefield, locationfield,
+                       command = lambda:ConfirmBookingToDatabase(bookingframe, firstnamefield, secondnamefield, locationfield,
                                                                  daycombo, monthcombo, yearcombo, headcountfield
-                                                                 , menutypecombo))
+                                                                 , menutypecombo, userid, username))
     getbutton.grid(row = 10, column = 2)
 
 
@@ -163,8 +167,8 @@ def OpenQuote(previousframe):
 
 
 #this function is called by a button at the end of a  form
-def ConfirmBookingToDatabase(firstnamefield, secondnamefield, locationfield, daycombo, monthcombo, yearcombo,
-                             headcountfield, menutypecombo):
+def ConfirmBookingToDatabase(previousframe, firstnamefield, secondnamefield, locationfield, daycombo, monthcombo, yearcombo,
+                             headcountfield, menutypecombo, userid, username):
     
     confirmBookingFrame = Frame(root)
     confirmBookingFrame.pack()
@@ -190,12 +194,14 @@ def ConfirmBookingToDatabase(firstnamefield, secondnamefield, locationfield, day
 
     #create a database connection
     conn = CreateConnection(db)
+    InitialiseTables(conn, db)
+
     if conn == None:
         print('Connection failed')
 
-    InitialiseTables(conn, db)
     
-    AddData(conn, FN, SN, LC, DT, HC, MT)
+    AddData(conn, FN, SN, LC, DT, HC, MT, userid, username)
+    ClearFrame(previousframe)
 
 	
 
@@ -275,12 +281,61 @@ def OpenCalendarFrame(previousframe):
 
 # Need a way to delete bookings with a key binding
     # tree.bind("<Backspace>", command=)
+def makeQuote(event, arg):
+    curItem = arg.focus()
+    print(curItem)
+    print('Im here')
+    quote = tkinter.simpledialog.askinteger("Make quote...", "Quote:")
+    
+
+    ## Need a function to update tree with a quote here
+    print(arg.item(curItem))
 
 def ReviewBooking(previousframe):
     #makes a lst of everything on the previousframe and destroys them one by one!
-    lst = previousframe.pack_slaves()
-    for l in lst:
-        l.destroy()
+    ClearFrame(previousframe)
+    reviewframe = Frame(previousframe)
+    reviewframe.pack()
+
+    db = "test.db"
+    conn = CreateConnection(db)
+    if conn == None:
+        print('Connection failed')
+
+    #SQL command to select data
+    sql = '''SELECT eventdate, secondname, location, menutype, userid FROM bookings_table WHERE quote = 0 AND quote_accepted = 0;'''
+    c = conn.cursor()
+    results = c.execute(sql).fetchall()
+
+    #Sort results in chronological order
+    date = lambda r: dt.strptime(r[0], '%d-%m-%Y')
+    results.sort(key=date)
+    
+    tree = ttk.Treeview(reviewframe)
+    tree["columns"]=("one","two","three","four")
+    tree.column("#0", width=200, minwidth=200)
+    tree.column("one", width=150, minwidth=150)
+    tree.column("two", width=200, minwidth=100)
+    tree.column("three", width=100, minwidth=100)
+    tree.column("four", width=30, minwidth=30)
+    tree.heading("#0",text="Date")
+    tree.heading("one", text="Surname")
+    tree.heading("two", text="Location")
+    tree.heading("three", text="Menutype")
+    tree.heading("four", text="Userid")
+
+    if len(results) != 0:    
+        i=0 
+        for row in results:
+            print(row)
+            tree.insert('', 'end', i,text=row[0], values=row[1:])
+            i+=1
+        tree.pack()        
+    else:
+        print("No results found")
+
+    tree.bind("<Return>", lambda event, arg=tree: makeQuote(event, arg))
+
 
 
 
