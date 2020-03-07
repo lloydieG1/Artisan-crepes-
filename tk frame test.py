@@ -4,7 +4,7 @@
 
 from tkinter import *
 from tkinter import ttk
-from PIL import ImageTk, Image
+# from PIL import ImageTk, Image
 import datetime
 from datetime import datetime as dt
 import sqlite3
@@ -55,7 +55,7 @@ def GetFieldNames(conn, table_name):
     ''' get field names for a specific table
     :param conn: Connection object
     :param table_name: the table that the function will get field names of
-    :return: list of field names
+    :return: lst of field names
     '''
     #Creates cursor
     c = conn.cursor()
@@ -63,7 +63,7 @@ def GetFieldNames(conn, table_name):
     table_info = c.execute('''PRAGMA table_info({})'''.format(table_name))
     fields = []
 
-    #Adds each field name to list fields, table names are in index 1 of each record in table_info
+    #Adds each field name to lst fields, table names are in index 1 of each record in table_info
     for l in table_info:
         fields.append(l[1])
         
@@ -115,7 +115,7 @@ def AddData(conn, FN, SN, LC, DT, HC, MT):
     '''
 
 
-    #Creates a list of all user input
+    #Creates a lst of all user input
     bookingdata = (FN, SN, LC, DT, HC, MT)
     #Navigates to create_membership_type function
     create = ConfirmBookingToTable(conn, bookingdata)
@@ -138,7 +138,7 @@ def AddData(conn, FN, SN, LC, DT, HC, MT):
 def ConfirmBookingToTable(conn, bookingdata):
     ''' create a new booking
     :param conn: Connection object
-    :param membership_type: list of each item in membership_type record given as user input
+    :param membership_type: lst of each item in membership_type record given as user input
     :return: booking id
     '''
     #SQL command to insert data
@@ -155,14 +155,14 @@ def ConfirmBookingToTable(conn, bookingdata):
 def CreateUser(conn, user):
     ''' create a new user
     :param conn: Connection object
-    :param user: list of each item in user record given as user input
+    :param user: lst of each item in user record given as user input
     :return: user id
     '''
     #SQL command to insert data
     sql = '''INSERT INTO users(first_name, last_name, age, membership_type)VALUES(?,?,?,?)'''
     #Creates cursor
     c = conn.cursor()
-    #Executes SQL command using list of user input
+    #Executes SQL command using lst of user input
     c.execute(sql, user)
 
     #Returns ID of added data
@@ -234,7 +234,7 @@ def SelectData(conn):
         #Loops through field names
         for i in range(1, len(fields)+1):
 
-            #Assigns search category based on user input and index of list
+            #Assigns search category based on user input and index of lst
             if int(which_field) == i:
                 which_field = fields[i-1]
                 break
@@ -265,7 +265,7 @@ def SelectData(conn):
         #Loops through field names
         for i in range(1, len(fields)+1):
 
-            #Assigns search category based on user input and index of list
+            #Assigns search category based on user input and index of lst
             if int(which_field) == i:
                 which_field = fields[i-1]
                 break
@@ -312,7 +312,7 @@ def UpdateData(conn):
         gym_access = input("Does this allow access to the Gym? (yes/no)\n>>> ").lower()
         studio_access = input("Does this allow access to the Studio? (yes/no)\n>>> ").lower()
 
-        #Creates a list of all user input
+        #Creates a lst of all user input
         membership_type = (name, length_months, price, gym_access, studio_access, ID)
         #SQL command to update record based on id
         sql = '''UPDATE membership_types SET name = ?, len_months = ?, price = ?, gym_access = ?, studio_access = ? WHERE id = ?'''
@@ -339,7 +339,7 @@ def UpdateData(conn):
         age = input("Enter age\n>>> ")
         membership_type = input("Choose membership type (Bronze/Silver/Gold)\n>>> ")
 
-        #Creates a list of all user input
+        #Creates a lst of all user input
         user = (first_name, last_name, age, membership_type, ID)
         #SQL command to update record based on id
         sql = '''UPDATE users SET first_name = ?, last_name = ?, age = ?, membership_type = ? WHERE id = ?'''
@@ -412,8 +412,17 @@ def InitialiseTables(conn, db_file):
         returns the database
     '''
 
+    users_table = ''' CREATE TABLE IF NOT EXISTS users_table(
+                                                userid integer PRIMARY KEY,
+                                                password text,
+                                                logged_in int)'''
+
+
+
     #SQL command creating a table called bookings_table with 3 columns
     sql_create_bookings_table = ''' CREATE TABLE IF NOT EXISTS bookings_table (
+                                                userid integer NOT NULL,
+                                                username text NOT NULL,
                                                 firstname text NOT NULL,
                                                 secondname text NOT NULL,
                                                 eventdate text,
@@ -424,7 +433,9 @@ def InitialiseTables(conn, db_file):
                                                 indoororoutdoor text,
                                                 utilityaccess text,
                                                 deliverytocustomers text,
-                                                presentationoffood text
+                                                presentationoffood text,
+                                                quote INT,
+                                                quote_accepted 
                                             ); '''
 
 
@@ -447,17 +458,21 @@ def InitialiseTables(conn, db_file):
 
 #initializes the root window which acts as a main menu with buttons for the customer and staff menus. Arguement is previous frame so that the previous frame can be wiped.
 def RootWindow(previousframe):
-    #makes a list of everything on the previousframe and destroys them one by one!
-    list = previousframe.pack_slaves()
-    for l in list:
+    #makes a lst of everything on the previousframe and destroys them one by one!
+    lst = previousframe.pack_slaves()
+    for l in lst:
         l.destroy()
 
     frame = Frame(root)
     canvas = Canvas(previousframe)  
     
-    img = ImageTk.PhotoImage(Image.open("logo1.jpg"))  
-    canvas.create_image(200, 200, anchor=N, image=img)
-    canvas.pack()  
+    photo = PhotoImage(file="logo.gif")
+    label = Label(image=photo)
+    label.image =photo
+    label.pack()
+    # img = ImageTk.PhotoImage(Image.open("logo1.jpg"))  
+    # canvas.create_image(50, 50, anchor=N, image=photo)
+    # canvas.pack()  
     #img = ImageTk.PhotoImage(Image.open("True1.gif"))
 
     frame.pack()
@@ -475,10 +490,10 @@ def RootWindow(previousframe):
 
 def destroyTuple(previousframe):	
     # for frames in previousframe:       
-    #     #makes a list of everything on the previousframe and destroys them one by one!
+    #     #makes a lst of everything on the previousframe and destroys them one by one!
     #     print("Destorying framse")
-    #     # list = frames.pack_slaves()
-        # for l in list:    
+    #     # lst = frames.pack_slaves()
+        # for l in lst:    
         #     l.destroy()
     for l in previousframe:
         l.destroy()
@@ -491,7 +506,7 @@ def OpenCustomerMenu(previousframe):
     #the booking frames withing frame, so this loop deals with that circumstance
     print(type(previousframe))
     if type(previousframe) == Tk:
-        lst = previousframe.pack_slaves()    #list is a keyword
+        lst = previousframe.pack_slaves()    #lst is a keyword
         for l in lst:
             l.destroy()
     else:
@@ -513,12 +528,12 @@ def OpenCustomerMenu(previousframe):
 
 #function to instantiate booking form frame
 def OpenBookingForm(previousframe):
-    #makes a list of everything on the previousframe and destroys them one by one!
-    list = previousframe.pack_slaves()
-    for l in list:
+    #makes a lst of everything on the previousframe and destroys them one by one!
+    lst = previousframe.pack_slaves()
+    for l in lst:
         l.destroy()
 
-    #long list of all the entry fields for the make booking screen
+    #long lst of all the entry fields for the make booking screen
     bookingframe = Frame(previousframe)
     bookingframe.pack()
 
@@ -605,16 +620,16 @@ def OpenBookingForm(previousframe):
 
 
 def OpenQuote(previousframe):
-    #makes a list of everything on the previousframe and destroys them one by one!
-    list = previousframe.pack_slaves()
-    for l in list:
+    #makes a lst of everything on the previousframe and destroys them one by one!
+    lst = previousframe.pack_slaves()
+    for l in lst:
         l.destroy()
 
 
 #this function is called by a button at the end of a  form
 def ConfirmBookingToDatabase(firstnamefield, secondnamefield, locationfield, daycombo, monthcombo, yearcombo,
                              headcountfield, menutypecombo):
-
+    
     confirmBookingFrame = Frame(root)
     confirmBookingFrame.pack()
 
@@ -645,17 +660,14 @@ def ConfirmBookingToDatabase(firstnamefield, secondnamefield, locationfield, day
     InitialiseTables(conn, db)
     
     AddData(conn, FN, SN, LC, DT, HC, MT)
+
 	
 
 
-    
-
-    
-    
 #funtion to instantiate staff menu
 def OpenStaffMenu(previousframe):
-    list = previousframe.pack_slaves()
-    for l in list:
+    lst = previousframe.pack_slaves()
+    for l in lst:
         l.destroy()
     
     staffmenu = Frame(previousframe)
@@ -674,9 +686,9 @@ def OpenStaffMenu(previousframe):
 
 
 def OpenCalendarFrame(previousframe):
-    #makes a list of everything on the previousframe and destroys them one by one!
-    list = previousframe.pack_slaves()
-    for l in list:
+    #makes a lst of everything on the previousframe and destroys them one by one!
+    lst = previousframe.pack_slaves()
+    for l in lst:
         l.destroy()	
 
     calendarframe = Frame(previousframe)
@@ -728,9 +740,9 @@ def OpenCalendarFrame(previousframe):
     # tree.bind("<Backspace>", command=)
 
 def ReviewBooking(previousframe):
-    #makes a list of everything on the previousframe and destroys them one by one!
-    list = previousframe.pack_slaves()
-    for l in list:
+    #makes a lst of everything on the previousframe and destroys them one by one!
+    lst = previousframe.pack_slaves()
+    for l in lst:
         l.destroy()
 
 
