@@ -4,7 +4,6 @@
 
 from tkinter import *
 from tkinter import ttk
-# from PIL import ImageTk, Image
 import datetime
 from datetime import datetime as dt
 # import sqlite3
@@ -45,19 +44,6 @@ def RootWindow(previousframe):
 
     staffbutton = Button(frame, text='Open Staff Menu', highlightbackground= 'blue', command = lambda:OpenStaffMenu(root))
     staffbutton.pack()
-
-def destroyTuple(previousframe):	
-    # for frames in previousframe:       
-    #     #makes a lst of everything on the previousframe and destroys them one by one!
-    #     print("Destorying framse")
-    #     # lst = frames.pack_slaves()
-        # for l in lst:    
-        #     l.destroy()
-    for l in previousframe:
-        l.destroy()
-    # lst = previousframe.pack_slaves()
-    # for l in previousframe:
-    #     l.destroy()
 	
 #function to instantiate customer menu
 def OpenCustomerMenu(previousframe):
@@ -262,7 +248,7 @@ def OpenCalendarFrame(previousframe):
     date = lambda r: dt.strptime(r[0], '%d-%m-%Y')
     results.sort(key=date)
     
-    tree = ttk.Treeview()
+    tree = ttk.Treeview(calendarframe)
     tree["columns"]=("one","two","three")
     tree.column("#0", width=270, minwidth=270)
     tree.column("one", width=150, minwidth=150)
@@ -283,7 +269,7 @@ def OpenCalendarFrame(previousframe):
     else:
         print("No results found")
 
-    returnbutton = Button(calendarframe, text='Return to main menu', highlightbackground= 'blue', command = lambda:RootWindow(calendarframe))
+    returnbutton = Button(calendarframe, text='Return to main menu', highlightbackground= 'blue', command = lambda:OpenStaffMenu(calendarframe))
     returnbutton.pack( side = BOTTOM )
 
 
