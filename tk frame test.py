@@ -6,6 +6,7 @@ from tkinter import *
 from tkinter import ttk
 import datetime
 import sqlite3
+from datetime import datetime as dt
 from sqlite3 import Error
 
 
@@ -69,44 +70,6 @@ def GetFieldNames(conn, table_name):
     return fields
 
 
-def Menu(conn):
-    ''' gives choice of add, view, select, update, delete or exit program
-    :param conn: Connection object
-    :return:
-    '''
-    #Outputs all options in a format assigning numbers to each option
-    choice = str(input("1 - Add Data\n2 - View Data\n3 - Select Data\n4 - Update Data\n5 - Delete Data\n6 - Exit\n>>> "))
-
-    if choice == '1':
-        #Navigates to add_data function
-        AddData(conn)
-        
-    elif choice == '2':
-        #Navigates to ViewData function
-        ViewData(conn)
-        
-    elif choice == '3':
-        #Navigates to SelectData function
-        SelectData(conn)
-        
-    elif choice == '4':
-        #Navigates to Updatedata function
-        Updatedata(conn)
-        
-    elif choice == '5':
-        #Navigates to DeleteData function
-        DeleteData(conn)
-        
-    elif choice == '6':
-        #Exits program
-        print("Goodbye")
-
-    #Restarts if invalid input is given for choice
-    else:
-        print("Invalid Input")
-##        menu()
-
-
 def AddData(conn, FN, SN, LC, DT, HC, MT):
     ''' allows user to select the table to add to and asks for input for new record
     :param conn: Connection object
@@ -141,7 +104,7 @@ def ConfirmBookingToTable(conn, bookingdata):
     :return: booking id
     '''
     #SQL command to insert data
-    sql = '''INSERT INTO bookings_table(firstname, secondname, location, eventdate, headcount, menutype)VALUES(?,?,?,?,?,?) '''
+    sql = '''INSERT INTO bookings_table(firstname, secondname, location, eventdate, headcount, choiceofmenu)VALUES(?,?,?,?,?,?) '''
     #Creates cursor
     c = conn.cursor()
     #Executes SQL command using user input
@@ -443,14 +406,14 @@ def InitialiseTables(conn, db_file):
     conn.commit()
 
 #OTHER FUNCTIONS
+def ClearFrame(previousframe):
+    for obj in previousframe.winfo_children():
+        obj.destroy()
 
 #initializes the root window which acts as a main menu with buttons for the customer and staff menus. Arguement is previous frame so that the previous frame can be wiped.
 def RootWindow(previousframe):
     #makes a list of everything on the previousframe and destroys them one by one!
-    list = previousframe.pack_slaves()
-    for l in list:
-        l.destroy()
-
+    ClearFrame(previousframe)
     frame = Frame(root)
     frame.pack()
 
@@ -467,19 +430,8 @@ def RootWindow(previousframe):
 
 #function to instantiate customer menu
 def OpenCustomerMenu(previousframe):
-    #the booking frames withing frame, so this loop deals with that circumstance
-    print(type(previousframe))
-    try:
-        for frames in previousframe:       
-            #makes a list of everything on the previousframe and destroys them one by one!
-            print(type(frames))
-            list = frames.pack_slaves()
-            for l in list:
-                l.destroy()
-    except:
-        list = previousframe.pack_slaves()
-        for l in list:
-            l.destroy()
+    delete_all(previousframe)
+
         
     customermenu = Frame(previousframe)
     customermenu.pack()
@@ -579,9 +531,8 @@ def OpenBookingForm(previousframe):
                                                                  , menutypecombo))
     getbutton.grid(row = 10, column = 2)
 
-    removalframes = (bookingframe, dayframe, monthframe, yearframe)
 
-    returnbutton = Button(bookingframe, text='Return to customer menu', command = lambda:OpenCustomerMenu(removalframes))
+    returnbutton = Button(bookingframe, text='Return to customer menu', command = lambda:OpenCustomerMenu(bookingframe))
     returnbutton.grid(row = 10, column = 1)
 
     
@@ -623,9 +574,8 @@ def ConfirmBookingToDatabase(firstnamefield, secondnamefield, locationfield, day
     
 #funtion to instantiate staff menu
 def OpenStaffMenu(previousframe):
-    list = previousframe.pack_slaves()
-    for l in list:
-        l.destroy()
+    ClearFrame(previousframe)	
+        
     
     staffmenu = Frame(previousframe)
     staffmenu.pack()
@@ -640,10 +590,8 @@ def OpenStaffMenu(previousframe):
 
 
 def OpenCalendarFrame(previousframe):
-    #makes a list of everything on the previousframe and destroys them one by one!
-    list = previousframe.pack_slaves()
-    for l in list:
-        l.destroy()	
+    #makes a lst of everything on the previousframe and destroys them one by one!
+    ClearFrame(previousframe)
 
     calendarframe = Frame(previousframe)
     calendarframe.pack()
@@ -657,24 +605,40 @@ def OpenCalendarFrame(previousframe):
     if conn == None:
         print('Connection failed')
 
-    InitialiseTables(conn, db)
-    #SQL command to insert data
-    sql = '''SELECT * FROM bookings_table;'''
+    #SQL command to select data
+    sql = '''SELECT eventdate, secondname, location menutype from bookings_table;'''
     #Creates cursor
     c = conn.cursor()
     #Executes SQL command using user input
     results = c.execute(sql).fetchall()
 
-    if len(results) != 0:
-        tree = ttk.Treeview()
+    #Sort results in chronological order
+    date = lambda r: dt.strptime(r[0], '%d-%m-%Y')
+    results.sort(key=date)
+    
+    tree = ttk.Treeview()
+    tree["columns"]=("one","two","three")
+    tree.column("#0", width=270, minwidth=270)
+    tree.column("one", width=150, minwidth=150)
+    tree.column("two", width=200, minwidth=100)
+    tree.column("three", width=100, minwidth=100)
+    tree.heading("#0",text="Date")
+    tree.heading("one", text="Surname")
+    tree.heading("two", text="Location")
+    tree.heading("three", text="Menutype")
+
+    if len(results) != 0:    
         i=0 
         for row in results:
             print(row)
-            tree.insert('', 'end', i, text=row)
+            tree.insert('', 'end', i,text=row[0], values=row[1:])
             i+=1
-                
+        tree.pack()        
     else:
         print("No results found")
+
+    returnbutton = Button(calendarframe, text='Return to main menu', highlightbackground= 'blue', command = lambda:RootWindow(calendarframe))
+    returnbutton.pack( side = BOTTOM )
 
 
 
