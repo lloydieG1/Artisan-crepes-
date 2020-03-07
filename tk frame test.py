@@ -11,18 +11,16 @@ from datetime import datetime as dt
 # from sqlite3 import Error
 from db_functions import *
 
-#SQL FUNTIONS
-
 
 #OTHER FUNCTIONS
+def ClearFrame(previousframe):
+    for obj in previousframe.winfo_children():
+        obj.destroy()
 
 #initializes the root window which acts as a main menu with buttons for the customer and staff menus. Arguement is previous frame so that the previous frame can be wiped.
 def RootWindow(previousframe):
-    #makes a lst of everything on the previousframe and destroys them one by one!
-    lst = previousframe.pack_slaves()
-    for l in lst:
-        l.destroy()
-
+    #makes a list of everything on the previousframe and destroys them one by one!
+    ClearFrame(previousframe)
     frame = Frame(root)
     canvas = Canvas(previousframe)  
     
@@ -63,15 +61,8 @@ def destroyTuple(previousframe):
 	
 #function to instantiate customer menu
 def OpenCustomerMenu(previousframe):
-    #the booking frames withing frame, so this loop deals with that circumstance
-    print(type(previousframe))
-    if type(previousframe) == Tk:
-        lst = previousframe.pack_slaves()    #lst is a keyword
-        for l in lst:
-            l.destroy()
-    else:
-        previousframe = destroyTuple(previousframe)
 
+    ClearFrame(previousframe)
         
     customermenu = Frame(previousframe)
     customermenu.pack()
@@ -173,9 +164,8 @@ def OpenBookingForm(previousframe):
                                                                  , menutypecombo))
     getbutton.grid(row = 10, column = 2)
 
-    removalframes = (bookingframe, dayframe, monthframe, yearframe)
 
-    returnbutton = Button(bookingframe, text='Return to customer menu', highlightbackground= 'blue', command = lambda:OpenCustomerMenu(removalframes))
+    returnbutton = Button(bookingframe, text='Return to customer menu', highlightbackground= 'blue', command = lambda:OpenCustomerMenu(bookingframe))
     returnbutton.grid(row = 10, column = 1)
 
 
@@ -226,9 +216,8 @@ def ConfirmBookingToDatabase(firstnamefield, secondnamefield, locationfield, day
 
 #funtion to instantiate staff menu
 def OpenStaffMenu(previousframe):
-    lst = previousframe.pack_slaves()
-    for l in lst:
-        l.destroy()
+
+    ClearFrame(previousframe)
     
     staffmenu = Frame(previousframe)
     staffmenu.pack()
@@ -247,9 +236,8 @@ def OpenStaffMenu(previousframe):
 
 def OpenCalendarFrame(previousframe):
     #makes a lst of everything on the previousframe and destroys them one by one!
-    lst = previousframe.pack_slaves()
-    for l in lst:
-        l.destroy()	
+
+    ClearFrame(previousframe)
 
     calendarframe = Frame(previousframe)
     calendarframe.pack()
@@ -295,6 +283,9 @@ def OpenCalendarFrame(previousframe):
     else:
         print("No results found")
 
+    returnbutton = Button(calendarframe, text='Return to main menu', highlightbackground= 'blue', command = lambda:RootWindow(calendarframe))
+    returnbutton.pack( side = BOTTOM )
+
 
 # Need a way to delete bookings with a key binding
     # tree.bind("<Backspace>", command=)
@@ -308,7 +299,6 @@ def ReviewBooking(previousframe):
 
 
 #Main program
-    
 root = Tk()
 root.minsize(width = '300', height = '400')
 
