@@ -350,7 +350,6 @@ def OpenCalendarFrame(previousframe):
     if len(results) != 0:    
         i=0 
         for row in results:
-            print(row)
             tree.insert('', 'end', i,text=row[0], values=row[1:])
             i+=1
         tree.pack()        
