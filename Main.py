@@ -518,6 +518,8 @@ def ReviewBookings(previousframe):
     #TODO - what the fuck is this doing and why
     tree.bind("<Return>", lambda event, arg=tree: MakeQuote(event, arg))
 
+    returnbutton = Button(reviewframe, text='Return to staff menu', highlightbackground= 'blue', command = lambda:OpenStaffMenu(reviewframe))
+    returnbutton.pack( side = BOTTOM )
 
 
 
