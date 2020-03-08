@@ -86,6 +86,9 @@ def OpenCustomerMenu(previousframe):
     returnbutton = Button(customermenu, text='Return to main menu', highlightbackground= 'blue', command = lambda:RootWindow(customermenu))
     returnbutton.pack()
 
+def OpenCustomerCalendar():
+    print('ah')
+
 
 def OpenBookingForm(previousframe):
     '''
@@ -282,6 +285,56 @@ def OpenStaffMenu(previousframe):
     returnbutton = Button(staffmenu, text='Return to main menu', highlightbackground= 'blue', command = lambda:RootWindow(staffmenu))
     returnbutton.pack()
 
+def OpenRemoveBookingFrame(previosframe):
+    ClearFrame(previousframe)
+    removebookingframe = Frame(previousframe)
+    removebookingframe.pack()
+
+    db = "test.db"
+    conn = CreateConnection(db)
+    if conn == None:
+        print('Connection failed')
+
+    #SQL command to select data
+    sql = '''SELECT eventdate, secondname, location, menutype, userid FROM bookings_table WHERE quote = 0 AND quote_accepted = 0;'''
+    c = conn.cursor()
+    results = c.execute(sql).fetchall()
+    conn.close()
+
+
+    #Sort results in chronological order
+    date = lambda r: dt.strptime(r[0], '%d-%m-%Y')
+    results.sort(key=date)
+    
+    tree = ttk.Treeview(removebookingframe)
+    tree["columns"]=("one","two","three","four")
+    tree.column("#0", width=200, minwidth=200)
+    tree.column("one", width=150, minwidth=150)
+    tree.column("two", width=200, minwidth=100)
+    tree.column("three", width=100, minwidth=100)
+    tree.column("four", width=30, minwidth=30)
+    tree.heading("#0",text="Date")
+    tree.heading("one", text="Surname")
+    tree.heading("two", text="Location")
+    tree.heading("three", text="Menutype")
+    tree.heading("four", text="Userid")
+
+    if len(results) != 0:    
+        i=0 
+        for row in results:
+            # print(row)
+            tree.insert('', 'end', i,text=row[0], values=row[1:])
+            i+=1
+        tree.pack()        
+    else:
+        print("No results found")
+    
+    #### Magic code 
+    tree.bind("<BackSpace>", lambda event, arg=tree: DeleteBooking(event, arg))
+
+    returnbutton = Button(removebookingframe, text='Return to staff menu', highlightbackground= 'blue', command = lambda:OpenStaffMenu(removebookingframe))
+    returnbutton.pack( side = BOTTOM )
+
 
 
 def OpenAddBookingForm(previousframe):
@@ -371,10 +424,15 @@ def OpenAddBookingForm(previousframe):
     menutypecombo.grid(row = 6, column = 3)
 
 
+    #TODO - find a better way for assigning userid
+    userid = 1
+    username = "admin"
+
+
     getbutton = Button(addbookingframe, text='Add booking to database', highlightbackground= 'blue',
-                       command = lambda:ConfirmBookingToDatabase(firstnamefield, secondnamefield, locationfield,
-                                                                 daycombo, monthcombo, yearcombo, headcountfield
-                                                                 , menutypecombo))
+                       command = lambda:ConfirmBookingToDatabase(addbookingframe, firstnamefield, secondnamefield, locationfield,
+                                         daycombo, monthcombo, yearcombo, headcountfield
+                                         , menutypecombo, userid, username))
     getbutton.grid(row = 10, column = 2)
 
 
@@ -466,14 +524,54 @@ def MakeQuote(event, arg):
     ##TODO - Need a function to update tree with a quote here
     print(arg.item(curItem))
 
-def ReviewBookings(previousframe):
-    '''
-    ReviewBookings displays a tree of chronilogically ordered current bookings to the user.
-    You then have the option of selecting a booking with enter to provide a quote.
 
-    param 1 previousframe: Tk frame
-    return: none
-    '''    
+def DeleteBooking(event, passedtree):
+    db = "test.db"
+    conn = CreateConnection(db)
+    c = conn.cursor()
+
+    #items itsnt actually each item in the row but a complex treeview index thingy, so these indexes need to be iterated to a list
+    items = passedtree.selection()
+    print(items)
+    bookingdata = []
+    for i in items:
+        bookingdata.append(passedtree.item(i)['values'])
+    print(bookingdata)
+    
+    for booking in bookingdata:
+        deletesurname = booking[0]
+        print(deletesurname)
+        deletedatasql = '''DELETE from bookings_table WHERE secondname=?; '''
+        c.execute(deletedatasql, (deletesurname,))
+        print("Deleted ", deletesurname)
+        conn.commit()
+        conn.close()
+            
+
+##    rid = arg.get_children()
+    #Rids of the objects currently in the tree
+##    for i in rid:
+##        if i != None:
+##            arg.delete(rid)
+
+##    secondname = arg.set(rid)['one']
+
+##    print(arg)
+##    print('Im here')
+
+##    sql = '''DELETE from bookings_table WHERE secondname = ? ; ''' 
+##
+##    arg.delete(secondname)
+##
+
+##    confirmBookingFrame = Frame(root)
+##    confirmBookingFrame.pack()
+##
+##    title = Label(confirmBookingFrame, text='Thankyou for your request. Your booking is being processed...').pack()
+
+##    ClearFrame(passedtree)
+
+def ReviewBookings(previousframe):
     ClearFrame(previousframe)
     reviewframe = Frame(previousframe)
     reviewframe.pack()
@@ -487,6 +585,8 @@ def ReviewBookings(previousframe):
     sql = '''SELECT eventdate, secondname, location, menutype, userid FROM bookings_table WHERE quote = 0 AND quote_accepted = 0;'''
     c = conn.cursor()
     results = c.execute(sql).fetchall()
+    conn.close()
+
 
     #Sort results in chronological order
     date = lambda r: dt.strptime(r[0], '%d-%m-%Y')
@@ -508,18 +608,22 @@ def ReviewBookings(previousframe):
     if len(results) != 0:    
         i=0 
         for row in results:
-            print(row)
+            # print(row)
             tree.insert('', 'end', i,text=row[0], values=row[1:])
             i+=1
         tree.pack()        
     else:
         print("No results found")
-
-    #TODO - what the fuck is this doing and why
-    tree.bind("<Return>", lambda event, arg=tree: MakeQuote(event, arg))
+    
+    #### Magic code
+    #### param 1: key press that calls lambda, param 2: lambda function that is passing event and tree, param3: function that lambda calls
+    tree.bind("<BackSpace>", lambda event, passedtree=tree : DeleteBooking(event, passedtree))
 
     returnbutton = Button(reviewframe, text='Return to staff menu', highlightbackground= 'blue', command = lambda:OpenStaffMenu(reviewframe))
     returnbutton.pack( side = BOTTOM )
+
+    userinstructions = Label(reviewframe, text='Highlight a booking and press backspace to remove it from the database')
+    userinstructions.pack( side = BOTTOM )
 
 
 
