@@ -83,11 +83,51 @@ def OpenCustomerMenu(previousframe):
     viewquote = Button(customermenu, text='View Quotes', highlightbackground= 'blue', command = lambda:OpenQuote(customermenu))
     viewquote.pack()
 
+    opencalendar = Button(customermenu, text='View Calendar', highlightbackground= 'blue', command = lambda:OpenCustomerCalendar(customermenu))
+    opencalendar.pack()
+
     returnbutton = Button(customermenu, text='Return to main menu', highlightbackground= 'blue', command = lambda:RootWindow(customermenu))
     returnbutton.pack()
 
-def OpenCustomerCalendar():
-    print('ah')
+def OpenCustomerCalendar(previousframe):
+    ClearFrame(previousframe)
+    customercalendarframe = Frame(previousframe)
+    customercalendarframe.pack()
+
+    db = "test.db"
+    conn = CreateConnection(db)
+    if conn == None:
+        print('Connection failed')
+
+    #SQL command to select data
+    sql = '''SELECT eventdate FROM bookings_table;'''
+    c = conn.cursor()
+    results = c.execute(sql).fetchall()
+    conn.close()
+
+
+    #Sort results in chronological order
+    date = lambda r: dt.strptime(r[0], '%d-%m-%Y')
+    results.sort(key=date)
+    
+    tree = ttk.Treeview(customercalendarframe)
+    tree["columns"]=("one")
+    tree.column("#0", width=200, minwidth=200)  
+    tree.heading("#0",text="Date")
+
+
+    if len(results) != 0:    
+        i=0 
+        for row in results:
+            # print(row)
+            tree.insert('', 'end', i,text=row[0], values=row[1:])
+            i+=1
+        tree.pack()        
+    else:
+        print("No results found")
+
+    returnbutton = Button(customercalendarframe, text='Return to customer menu', highlightbackground= 'blue', command = lambda:OpenCustomerMenu(customercalendarframe))
+    returnbutton.pack()
 
 
 def OpenBookingForm(previousframe):
@@ -276,7 +316,7 @@ def OpenStaffMenu(previousframe):
     calendar = Button(staffmenu, text='View Calendar', highlightbackground= 'blue', command = lambda:OpenCalendarFrame(staffmenu))
     calendar.pack()
 
-    reviewbookings = Button(staffmenu, text='Review Bookings', highlightbackground= 'blue', command = lambda:ReviewBookings(staffmenu))
+    reviewbookings = Button(staffmenu, text='Delete Bookings', highlightbackground= 'blue', command = lambda:ReviewBookings(staffmenu))
     reviewbookings.pack()
 
     addbookingbutton = Button(staffmenu, text='Add booking', highlightbackground= 'blue', command = lambda:OpenAddBookingForm(staffmenu))
