@@ -80,7 +80,7 @@ def OpenCustomerMenu(previousframe):
     bookingform = Button(customermenu, text='Make a Booking', highlightbackground= 'blue', command = lambda:OpenBookingForm(customermenu))
     bookingform.pack()
 
-    viewquote = Button(customermenu, text='View Quotes', highlightbackground= 'blue', command = lambda:OpenQuote(customermenu))
+    viewquote = Button(customermenu, text='View Quotes', highlightbackground= 'blue', command = lambda:OpenCustomerQuote(customermenu))
     viewquote.pack()
 
     opencalendar = Button(customermenu, text='View Calendar', highlightbackground= 'blue', command = lambda:OpenCustomerCalendar(customermenu))
@@ -89,11 +89,129 @@ def OpenCustomerMenu(previousframe):
     returnbutton = Button(customermenu, text='Return to main menu', highlightbackground= 'blue', command = lambda:RootWindow(customermenu))
     returnbutton.pack()
 
+def OpenCustomerQuote(previousframe):
+    ClearFrame(previousframe)
+        
+    customerquoteframe = Frame(previousframe)
+    customerquoteframe.pack()
+    
+    db = "test.db"
+    conn = CreateConnection(db)
+    if conn == None:
+        print('Connection failed')
+
+    #SQL command to select data
+    sql = '''SELECT eventdate, secondname FROM bookings_table;'''
+    c = conn.cursor()
+    results = c.execute(sql).fetchall()
+    conn.close()
+
+
+    #Sort results in chronological order
+    date = lambda r: dt.strptime(r[0], '%d-%m-%Y')
+    results.sort(key=date)
+    
+    tree = ttk.Treeview(customerquoteframe)
+    tree["columns"]=("one","two")
+    tree.column("#0", width=200, minwidth=200)
+    tree.column("one", width=150, minwidth=150)
+    tree.heading("#0",text="Date")
+    tree.heading("one", text="Surname")
+
+
+    if len(results) != 0:    
+        i=0 
+        for row in results:
+            # print(row)
+            tree.insert('', 'end', i,text=row[0], values=row[1:])
+            i+=1
+        tree.pack()        
+    else:
+        print("No results found")
+
+    returnbutton = Button(customerquoteframe, text='Return to customer menu', highlightbackground= 'blue', command = lambda:OpenStaffMenu(reviewframe))
+    returnbutton.pack( side = BOTTOM )
+
+    userinstructions = Label(customerquoteframe, text='Select your booking and press enter to recieve a calculated quote')
+    userinstructions.pack( side = BOTTOM )
+
+    #### Magic code
+    #### param 1: key press that calls lambda, param 2: lambda function that is passing event and tree, param3: function that lambda calls
+    tree.bind("<Return>", lambda event, passedtree=tree: CalculateQuote(event, passedtree, customerquoteframe))
+
+def CalculateQuote(event, passedtree, previousframe):
+    calculatequoteframe = Frame(previousframe)
+    calculatequoteframe.pack()
+    
+    db = "test.db"
+    conn = CreateConnection(db)
+    c = conn.cursor()
+
+    #items itsnt actually each item in the row but a complex treeview index thingy, so these indexes need to be iterated to a list
+    items = passedtree.selection()
+    print(items)
+    treedata = []
+    for i in items:
+        treedata.append(passedtree.item(i)['values'])
+    print(treedata)
+
+    #TODO - make this so it calculates the quote from headcount and menutype rather than just returning row
+    selectsurname = treedata[0]
+    print(selectsurname)
+    #selects everything from the row selected in tree and stores in results
+    selectheadcountsql = '''SELECT headcount FROM bookings_table WHERE secondname = ? ;'''
+    headcountresult = c.execute(selectheadcountsql, selectsurname).fetchall()
+    if len(headcountresult) != 0:
+        print('Result: ',headcountresult)
+
+    else:
+        print('No results found')
+    selectmenutypesql = '''SELECT menutype FROM bookings_table WHERE secondname = ? ;'''
+    menutyperesult = c.execute(selectmenutypesql, selectsurname).fetchall()
+    if len(menutyperesult) != 0:
+        print('Result: ',menutyperesult)
+
+    else:
+        print('No results found')
+
+    conn.commit()
+    conn.close()
+
+    #editable variables for quote calculation
+    menutypecost = 0
+    flatbookingfee = 20
+    costpercrepe = 2
+    if menutyperesult == 'Sweet Basic':
+        menutypecost = 0
+    elif menutyperesult == 'Sweet and Savoury Basic':
+        menutypecost = 50
+    elif menutyperesult == 'Sweet Luxury':
+        menutypecost = 100
+    elif menutyperesult == 'Sweet and Savoury Luxury':
+        menutypecost = 150
+    #convert from list to int
+    intheadcountresult = 0
+    for i in headcountresult:
+        for z in i:
+            intheadcountresult = z 
+
+    
+
+    #the calculation that decides the magnitude of the quote
+    quotecalc = flatbookingfee + menutypecost + (intheadcountresult * costpercrepe)
+
+    #label that displays quotecalc to user
+    quotecalclabel = Label(calculatequoteframe, text='Your booking has been quoted for: £' + str(quotecalc))
+    quotecalclabel.pack()
+
+    
+
 def OpenCustomerCalendar(previousframe):
     ClearFrame(previousframe)
     customercalendarframe = Frame(previousframe)
     customercalendarframe.pack()
 
+    #connection is made to bookings_table
     db = "test.db"
     conn = CreateConnection(db)
     if conn == None:
@@ -325,56 +443,6 @@ def OpenStaffMenu(previousframe):
     returnbutton = Button(staffmenu, text='Return to main menu', highlightbackground= 'blue', command = lambda:RootWindow(staffmenu))
     returnbutton.pack()
 
-def OpenRemoveBookingFrame(previosframe):
-    ClearFrame(previousframe)
-    removebookingframe = Frame(previousframe)
-    removebookingframe.pack()
-
-    db = "test.db"
-    conn = CreateConnection(db)
-    if conn == None:
-        print('Connection failed')
-
-    #SQL command to select data
-    sql = '''SELECT eventdate, secondname, location, menutype, userid FROM bookings_table WHERE quote = 0 AND quote_accepted = 0;'''
-    c = conn.cursor()
-    results = c.execute(sql).fetchall()
-    conn.close()
-
-
-    #Sort results in chronological order
-    date = lambda r: dt.strptime(r[0], '%d-%m-%Y')
-    results.sort(key=date)
-    
-    tree = ttk.Treeview(removebookingframe)
-    tree["columns"]=("one","two","three","four")
-    tree.column("#0", width=200, minwidth=200)
-    tree.column("one", width=150, minwidth=150)
-    tree.column("two", width=200, minwidth=100)
-    tree.column("three", width=100, minwidth=100)
-    tree.column("four", width=30, minwidth=30)
-    tree.heading("#0",text="Date")
-    tree.heading("one", text="Surname")
-    tree.heading("two", text="Location")
-    tree.heading("three", text="Menutype")
-    tree.heading("four", text="Userid")
-
-    if len(results) != 0:    
-        i=0 
-        for row in results:
-            # print(row)
-            tree.insert('', 'end', i,text=row[0], values=row[1:])
-            i+=1
-        tree.pack()        
-    else:
-        print("No results found")
-    
-    #### Magic code 
-    tree.bind("<BackSpace>", lambda event, arg=tree: DeleteBooking(event, arg))
-
-    returnbutton = Button(removebookingframe, text='Return to staff menu', highlightbackground= 'blue', command = lambda:OpenStaffMenu(removebookingframe))
-    returnbutton.pack( side = BOTTOM )
-
 
 
 def OpenAddBookingForm(previousframe):
@@ -541,28 +609,6 @@ def OpenCalendarFrame(previousframe):
 
 #TODO - Need a way to delete bookings with a key binding
     # tree.bind("<Backspace>", command=)
-    
-def MakeQuote(event, arg):
-    '''
-    MakeQuote opens a dialogue box when pressing enter on a highlighted row from the tree
-    that prompts the user for a quote.
-
-    TODO - quotes do not save to database
-
-    param 1 event: TODO - im really not entirely sure what event is here, pressing enter?
-    param 2 arg: Tk tree
-    return: none
-    '''
-
-    #arg.focus() returns the currently selected tow in the tree
-    curItem = arg.focus()
-    print(curItem)
-    print('Im here')
-    quote = tkinter.simpledialog.askinteger("Make quote...", "Quote:")
-    
-
-    ##TODO - Need a function to update tree with a quote here
-    print(arg.item(curItem))
 
 
 def DeleteBooking(event, passedtree):
