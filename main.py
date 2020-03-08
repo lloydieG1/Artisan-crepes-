@@ -67,9 +67,7 @@ def OpenCustomerMenu(previousframe):
 #function to instantiate booking form frame
 def OpenBookingForm(previousframe):
     #makes a lst of everything on the previousframe and destroys them one by one!
-    lst = previousframe.pack_slaves()
-    for l in lst:
-        l.destroy()
+    ClearFrame(previousframe)
 
     #long lst of all the entry fields for the make booking screen
     bookingframe = Frame(previousframe)
@@ -104,7 +102,7 @@ def OpenBookingForm(previousframe):
 
 
     daycombo = ttk.Combobox(dayframe, values = [
-        '00', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12', '13', '14', '15', '16',
+        '01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12', '13', '14', '15', '16',
         '17', '18', '19', '20', '21', '22', '23', '24', '25', '26', '27', '28', '29', '30', '31'
         ], width = 20)
     daycombo.pack()
@@ -169,7 +167,7 @@ def OpenQuote(previousframe):
 #this function is called by a button at the end of a  form
 def ConfirmBookingToDatabase(previousframe, firstnamefield, secondnamefield, locationfield, daycombo, monthcombo, yearcombo,
                              headcountfield, menutypecombo, userid, username):
-    
+
     confirmBookingFrame = Frame(root)
     confirmBookingFrame.pack()
 
@@ -250,6 +248,8 @@ def OpenCalendarFrame(previousframe):
     #Executes SQL command using user input
     results = c.execute(sql).fetchall()
 
+    c.close()
+
     #Sort results in chronological order
     date = lambda r: dt.strptime(r[0], '%d-%m-%Y')
     results.sort(key=date)
@@ -281,15 +281,27 @@ def OpenCalendarFrame(previousframe):
 
 # Need a way to delete bookings with a key binding
     # tree.bind("<Backspace>", command=)
-def makeQuote(event, arg):
-    curItem = arg.focus()
-    print(curItem)
-    print('Im here')
-    quote = tkinter.simpledialog.askinteger("Make quote...", "Quote:")
-    
+def deleteBooking(event, arg):
+    rid = arg.get_children()
+    secondname = arg.set(rid)['one']
 
-    ## Need a function to update tree with a quote here
-    print(arg.item(curItem))
+    print(secondname)
+    print('Im here')
+    # quote = tkinter.simpledialog.askinteger("Make quote...", "Quote:")
+    db = "test.db"
+    conn = CreateConnection(db) 
+    sql = '''DELETE from bookings_table WHERE secondname = ? ; ''' 
+
+    c = conn.cursor()
+    c.execute(sql, secondname)
+    conn.close()
+
+    confirmBookingFrame = Frame(root)
+    confirmBookingFrame.pack()
+
+    title = Label(confirmBookingFrame, text='Thankyou for your request. Your booking is being processed...').pack()
+
+    ClearFrame(arg)
 
 def ReviewBooking(previousframe):
     #makes a lst of everything on the previousframe and destroys them one by one!
@@ -306,6 +318,8 @@ def ReviewBooking(previousframe):
     sql = '''SELECT eventdate, secondname, location, menutype, userid FROM bookings_table WHERE quote = 0 AND quote_accepted = 0;'''
     c = conn.cursor()
     results = c.execute(sql).fetchall()
+    conn.close()
+
 
     #Sort results in chronological order
     date = lambda r: dt.strptime(r[0], '%d-%m-%Y')
@@ -327,14 +341,17 @@ def ReviewBooking(previousframe):
     if len(results) != 0:    
         i=0 
         for row in results:
-            print(row)
+            # print(row)
             tree.insert('', 'end', i,text=row[0], values=row[1:])
             i+=1
         tree.pack()        
     else:
         print("No results found")
+    
+    #### Magic code 
+    tree.bind("<BackSpace>", lambda event, arg=tree: deleteBooking(event, arg))
+    # print(quote)
 
-    tree.bind("<Return>", lambda event, arg=tree: makeQuote(event, arg))
 
 
 
